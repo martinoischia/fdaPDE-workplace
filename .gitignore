@@ -2,6 +2,6 @@ matrix*
 Cshape.out
 tmp
 *.ipynb
-!Cshape.ipynb
+!Cshape_lab.ipynb
 .ipynb_checkpoints
 Cshape_lab.r
