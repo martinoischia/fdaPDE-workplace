@@ -1,2 +1,6 @@
 matrix*
 Cshape.out
+tmp
+*.ipynb
+!Cshape.ipynb
+.ipynb_checkpoints
