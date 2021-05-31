@@ -4,3 +4,4 @@ tmp
 *.ipynb
 !Cshape.ipynb
 .ipynb_checkpoints
+Cshape_lab.r
