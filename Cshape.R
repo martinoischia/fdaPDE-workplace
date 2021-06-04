@@ -4,7 +4,7 @@ set.seed(5847947)
 # (or you can install that library and run this same script modifying
 # properly the lines where you find a triple pound [###])
 kim= new.env() ###
-load("D:/VM/Tesi/my/kim_version_output.RData",envir=kim) ###
+load("D:/VM/Tesi/my/kim_full.RData",envir=kim) ###
 
 library(fdaPDE)
 
@@ -138,97 +138,96 @@ mod2_info <- smooth.FEM.mixed(
 # plot(mod2_info$fit.FEM.time, 2)
 # plot(mod2_info$fit.FEM.time, 3)
 
-# identical(kim$mod2_info$fit.FEM.mixed$coeff, mod2_info$fit.FEM.mixed$coeff) ###
-# kim$mod2_info$beta ###
-# mod2_info$beta ###
-# kim$mod2_info$beta - mod2_info$beta ###
+all.equal(kim$mod2_info$fit.FEM.mixed$coeff, mod2_info$fit.FEM.mixed$coeff) ###
+kim$mod2_info$beta - mod2_info$beta ###
 
-# time.taken <- 0
-# f_selected_lambda <- rep(0, N)
-# for (i in 1:N) {
-#     data2 <- mixed_obs2 + rnorm(nlocs * 3, mean = 0, sd = 0.05 * (ran[2] - ran[1]))
+time.taken <- 0
+f_selected_lambda <- rep(0, N)
+for (i in 1:N) {
+    data2 <- mixed_obs2 + rnorm(nlocs * 3, mean = 0, sd = 0.05 * (ran[2] - ran[1]))
 
-#     # measure time
-#     start.time <- Sys.time()
-#     mod2 <- smooth.FEM.mixed(
-#         locations = loc,
-#         observations = data2,
-#         covariates = covariates,
-#         FEMbasis = mod2_info$fit.FEM$FEMbasis, # reuse tree info
-#         random_effect = c(1),
-#         lambda = lambda,
-#         lambda.selection.lossfunction = 'GCV', ###
-#         GCV = GCVFLAG, ###
-#         bary.locations = mod2_info$bary.locations, # reuse bary info
-#         DOF.matrix = mod2_info$edf ###
-#     ) # reuse dof info
-#     end.time <- Sys.time()
-#     time.taken <- (end.time - start.time) + time.taken
+    # measure time
+    start.time <- Sys.time()
+    mod2 <- smooth.FEM.mixed(
+        locations = loc,
+        observations = data2,
+        covariates = covariates,
+        FEMbasis = mod2_info$fit.FEM$FEMbasis, # reuse tree info
+        random_effect = c(1),
+        lambda = lambda,
+        lambda.selection.lossfunction = 'GCV', ###
+        #GCV = GCVFLAG, ###
+        bary.locations = mod2_info$bary.locations, # reuse bary info
+        DOF.matrix = mod2_info$edf ###
+        #DOF_matrix = mod2_info$edf ###
+    ) # reuse dof info
+    end.time <- Sys.time()
+    time.taken <- (end.time - start.time) + time.taken
 
-#     f_selected_lambda[i] <- which.min(mod2$GCV) # returns index
+    f_selected_lambda[i] <- which.min(mod2$GCV) # returns index
 
-#     # beta estimates
-#     f_betamat[1, i] <- mod2$beta[, which.min(mod2$GCV)][1]
-#     f_betamat[2, i] <- mod2$beta[, which.min(mod2$GCV)][2]
+    # beta estimates
+    f_betamat[1, i] <- mod2$beta[, which.min(mod2$GCV)][1]
+    f_betamat[2, i] <- mod2$beta[, which.min(mod2$GCV)][2]
 
-#     # beta MSE
-#     RMSE <- RMSE_func(beta_exact2[1], f_betamat[1, i])
-#     f_rmse_beta1 <- c(f_rmse_beta1, RMSE)
+    # beta MSE
+    RMSE <- RMSE_func(beta_exact2[1], f_betamat[1, i])
+    f_rmse_beta1 <- c(f_rmse_beta1, RMSE)
 
-#     RMSE <- RMSE_func(beta_exact2[2], f_betamat[2, i])
-#     f_rmse_beta2 <- c(f_rmse_beta2, RMSE)
+    RMSE <- RMSE_func(beta_exact2[2], f_betamat[2, i])
+    f_rmse_beta2 <- c(f_rmse_beta2, RMSE)
 
-#     # bi estimates
-#     f_bimat[1, i] <- mod2$b_i[, which.min(mod2$GCV)][1]
-#     f_bimat[2, i] <- mod2$b_i[, which.min(mod2$GCV)][2]
-#     f_bimat[3, i] <- mod2$b_i[, which.min(mod2$GCV)][3]
+    # bi estimates
+    f_bimat[1, i] <- mod2$b_i[, which.min(mod2$GCV)][1]
+    f_bimat[2, i] <- mod2$b_i[, which.min(mod2$GCV)][2]
+    f_bimat[3, i] <- mod2$b_i[, which.min(mod2$GCV)][3]
 
-#     # bi MSE
-#     RMSE <- RMSE_func(-5, f_bimat[1, i])
-#     f_rmse_b1_1 <- c(f_rmse_b1_1, RMSE)
+    # bi MSE
+    RMSE <- RMSE_func(-5, f_bimat[1, i])
+    f_rmse_b1_1 <- c(f_rmse_b1_1, RMSE)
 
-#     RMSE <- RMSE_func(0, f_bimat[2, i])
-#     f_rmse_b2_1 <- c(f_rmse_b2_1, RMSE)
+    RMSE <- RMSE_func(0, f_bimat[2, i])
+    f_rmse_b2_1 <- c(f_rmse_b2_1, RMSE)
 
-#     RMSE <- RMSE_func(5, f_bimat[3, i])
-#     f_rmse_b3_1 <- c(f_rmse_b3_1, RMSE)
+    RMSE <- RMSE_func(5, f_bimat[3, i])
+    f_rmse_b3_1 <- c(f_rmse_b3_1, RMSE)
 
-#     # f RMSE
-#     fitted.function2 <- eval.FEM.mixed(mod2$fit.FEM,
-#         locations = loc
-#     )[, which.min(mod2$GCV)]
+    # f RMSE
+    fitted.function2 <- eval.FEM.mixed(mod2$fit.FEM,
+        locations = loc
+    )[, which.min(mod2$GCV)]
 
-#     RMSE <- RMSE_func(func_evaluation1, fitted.function2[1:nlocs])
-#     f_rmse_f1 <- c(f_rmse_f1, RMSE)
+    RMSE <- RMSE_func(func_evaluation1, fitted.function2[1:nlocs])
+    f_rmse_f1 <- c(f_rmse_f1, RMSE)
 
-#     RMSE <- RMSE_func(func_evaluation2, fitted.function2[(nlocs + 1):(2 * nlocs)])
-#     f_rmse_f2 <- c(f_rmse_f2, RMSE)
+    RMSE <- RMSE_func(func_evaluation2, fitted.function2[(nlocs + 1):(2 * nlocs)])
+    f_rmse_f2 <- c(f_rmse_f2, RMSE)
 
-#     RMSE <- RMSE_func(func_evaluation3, fitted.function2[(2 * nlocs + 1):(3 * nlocs)])
-#     f_rmse_f3 <- c(f_rmse_f3, RMSE)
+    RMSE <- RMSE_func(func_evaluation3, fitted.function2[(2 * nlocs + 1):(3 * nlocs)])
+    f_rmse_f3 <- c(f_rmse_f3, RMSE)
 
 
-#     # global RMSE
-#     RMSE <- RMSE_func(
-#         W %*% beta_exact1 + func_evaluation1,
-#         W %*% f_betamat[, i] + cov1 * f_bimat[1, i] + fitted.function2[1:nlocs]
-#     )
-#     f_global_rmse1 <- c(f_global_rmse1, RMSE)
+    # global RMSE
+    RMSE <- RMSE_func(
+        W %*% beta_exact1 + func_evaluation1,
+        W %*% f_betamat[, i] + cov1 * f_bimat[1, i] + fitted.function2[1:nlocs]
+    )
+    f_global_rmse1 <- c(f_global_rmse1, RMSE)
 
-#     RMSE <- RMSE_func(
-#         W %*% beta_exact2 + func_evaluation2,
-#         W %*% f_betamat[, i] + cov1 * f_bimat[2, i] + fitted.function2[(nlocs + 1):(2 * nlocs)]
-#     )
-#     f_global_rmse2 <- c(f_global_rmse2, RMSE)
+    RMSE <- RMSE_func(
+        W %*% beta_exact2 + func_evaluation2,
+        W %*% f_betamat[, i] + cov1 * f_bimat[2, i] + fitted.function2[(nlocs + 1):(2 * nlocs)]
+    )
+    f_global_rmse2 <- c(f_global_rmse2, RMSE)
 
-#     RMSE <- RMSE_func(
-#         W %*% beta_exact3 + func_evaluation3,
-#         W %*% f_betamat[, i] + cov1 * f_bimat[3, i] + fitted.function2[(2 * nlocs + 1):(3 * nlocs)]
-#     )
-#     f_global_rmse3 <- c(f_global_rmse3, RMSE)
-# }
+    RMSE <- RMSE_func(
+        W %*% beta_exact3 + func_evaluation3,
+        W %*% f_betamat[, i] + cov1 * f_bimat[3, i] + fitted.function2[(2 * nlocs + 1):(3 * nlocs)]
+    )
+    f_global_rmse3 <- c(f_global_rmse3, RMSE)
+}
 
-# # Rprof(NULL)
-# # summaryRprof("Cshape.out", memory = "tseries", diff = TRUE)
-# table(f_selected_lambda)
-# detach(horseshoe2D)
+# Rprof(NULL)
+# summaryRprof("Cshape.out", memory = "tseries", diff = TRUE)
+table(f_selected_lambda)
+detach(horseshoe2D)
