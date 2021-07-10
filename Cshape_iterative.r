@@ -17,7 +17,7 @@ FEMbasis <- create.FEM.basis(mesh)
 # lambda = 10^(-2)
 lambda <- 10^seq(-2, 1, by = 0.1)
 GCVFLAG <- TRUE
-GCVMETHODFLAG <- "exact"
+GCVMETHODFLAG <- 'stochastic' #"exact"
 
 # Almost the same as the one in Massardi Spaziani report !?
 fs.test.time <- function(x, y, t = y) {
@@ -126,7 +126,7 @@ mod2_info <- smooth.FEM.mixed(
     random_effect = c(1),
     lambda = lambda,
     lambda.selection.lossfunction = 'GCV',
-    DOF.evaluation = GCVMETHODFLAG,
+    DOF.evaluation = GCVMETHODFLAG, DOF.stochastic.realizations = 100,
     FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = 1e-8, threshold_residual = 1e-8)
 	 
 # mod1_info <- smooth.FEM.mixed(
@@ -169,8 +169,8 @@ for (i in 1:N) {
         lambda.selection.lossfunction = 'GCV',
         bary.locations = mod2_info$bary.locations, # reuse bary info
         DOF.matrix = mod2_info$edf,
-		  FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = 1e-6,
-		  threshold_residual = 1e-6
+		  FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = 1e-9,
+		  threshold_residual = 1e-9
     ) # reuse dof info
     end.time <- Sys.time()
     time.taken <- (end.time - start.time) + time.taken
@@ -238,13 +238,12 @@ for (i in 1:N) {
     f_global_rmse3 <- c(f_global_rmse3, RMSE)
 }
 
-it = new.env()
-load("D:/VM/Tesi/my/iterative.RData", env = it)
+load("D:/VM/Tesi/my/ite.RData")
 
 # Rprof(NULL)
 # summaryRprof("Cshape.out", memory = "tseries", diff = TRUE)
 detach(horseshoe2D)
 print("beta iterativo di 3 diverse simulazioni - corrispondente  iterativo vecchio")
-it$f_betamat[,1:3]-f_betamat
-rm(it)
+ite$f_betamat[,1:3]-f_betamat
+rm(ite)
 # save.image("iterative.RData")
