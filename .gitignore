@@ -3,3 +3,5 @@ tmp
 *.ipynb
 !Cshape_lab.ipynb
 .ipynb_checkpoints
+*.png
+**/*.Rdata

@@ -1,6 +1,9 @@
 rm(list = ls())
-
 set.seed(5847947)
+# Loading the output of Kim's fdaPDE for checking consistency of results
+# (or you can install that library and run this same script modifying
+# properly the lines where you find a triple pound [###])
+load("D:/VM/Tesi/my/kim.RData") ###
 
 library(fdaPDE)
 
@@ -14,10 +17,9 @@ mesh <- create.mesh.2D(nodes = boundary_nodes, segments = boundary_segments)
 mesh <- refine.mesh.2D(mesh, maximum_area = 0.025, minimum_angle = 30)
 FEMbasis <- create.FEM.basis(mesh)
 
-# lambda = 10^(-2)
 lambda <- 10^seq(-2, 1, by = 0.1)
 GCVFLAG <- TRUE
-GCVMETHODFLAG <- 'stochastic' #"exact"
+GCVMETHODFLAG <- "exact"
 
 # Almost the same as the one in Massardi Spaziani report !?
 fs.test.time <- function(x, y, t = y) {
@@ -87,7 +89,7 @@ func_evaluation3 <- fs.test.time(x = loc[, 1], y = loc[, 2], t = rep(1.5, nlocs)
 # range
 ran <- range(c(func_evaluation1, func_evaluation2, func_evaluation3))
 # Set number of simulation trials
-N <- 3
+N <- 50
 # by column
 mixed_obs2 <- cbind(
     W %*% beta_exact1 + func_evaluation1,
@@ -96,6 +98,7 @@ mixed_obs2 <- cbind(
 )
 
 covariates <- rbind(W, W, W)
+
 # For postprocessing
 f_betamat <- matrix(data = NA, nrow = 2, ncol = N)
 f_bimat <- matrix(data = NA, nrow = 3, ncol = N)
@@ -125,32 +128,17 @@ mod2_info <- smooth.FEM.mixed(
     FEMbasis = FEMbasis,
     random_effect = c(1),
     lambda = lambda,
-    lambda.selection.lossfunction = 'GCV',
-    DOF.evaluation = GCVMETHODFLAG, DOF.stochastic.realizations = 100,
-    FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = 1e-8, threshold_residual = 1e-8)
-	 
-# mod1_info <- smooth.FEM.mixed(
-    # locations = loc,
-    # observations = mixed_obs2, # obs doesn't effect tree, bary, dof
-    # covariates = covariates,
-    # FEMbasis = FEMbasis,
-    # random_effect = c(1),
-    # lambda = lambda,
-    # lambda.selection.lossfunction = 'GCV',
-    # DOF.evaluation = GCVMETHODFLAG,
-    # FLAG_ITERATIVE = FALSE)
-	 
+    lambda.selection.lossfunction = 'GCV', ###
+    #GCV = GCVFLAG, ###
+    DOF.evaluation = GCVMETHODFLAG) ###
+    #GCVmethod = 'Exact') ###
 
+# plot(mod2_info$fit.FEM.time, 1) or mixed ?
+# plot(mod2_info$fit.FEM.time, 2)
+# plot(mod2_info$fit.FEM.time, 3)
 
-# print("vettore f")
-# mod2_info$fit.FEM.mixed$coeff [1:10]
-# print ("differenza vettore f tra i due solver")
-# (mod2_info$fit.FEM.mixed$coeff - mod1_info$fit.FEM.mixed$coeff)[1:10]
-# print("beta iterativo")
-# mod2_info$beta
-# print("beta normale")
-# mod1_info$beta
-
+all.equal(kim$mod2_info$fit.FEM.mixed$coeff, mod2_info$fit.FEM.mixed$coeff) ###
+kim$mod2_info$beta - mod2_info$beta ###
 
 time.taken <- 0
 f_selected_lambda <- rep(0, N)
@@ -166,11 +154,11 @@ for (i in 1:N) {
         FEMbasis = mod2_info$fit.FEM$FEMbasis, # reuse tree info
         random_effect = c(1),
         lambda = lambda,
-        lambda.selection.lossfunction = 'GCV',
+        lambda.selection.lossfunction = 'GCV', ###
+        #GCV = GCVFLAG, ###
         bary.locations = mod2_info$bary.locations, # reuse bary info
-        DOF.matrix = mod2_info$edf,
-		  FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = 1e-9,
-		  threshold_residual = 1e-9
+        DOF.matrix = mod2_info$edf ###
+        #DOF_matrix = mod2_info$edf ###
     ) # reuse dof info
     end.time <- Sys.time()
     time.taken <- (end.time - start.time) + time.taken
@@ -238,12 +226,7 @@ for (i in 1:N) {
     f_global_rmse3 <- c(f_global_rmse3, RMSE)
 }
 
-load("D:/VM/Tesi/my/ite.RData")
-
 # Rprof(NULL)
 # summaryRprof("Cshape.out", memory = "tseries", diff = TRUE)
+table(f_selected_lambda)
 detach(horseshoe2D)
-print("beta iterativo di 3 diverse simulazioni - corrispondente  iterativo vecchio")
-ite$f_betamat[,1:3]-f_betamat
-rm(ite)
-# save.image("iterative.RData")
