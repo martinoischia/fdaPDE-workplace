@@ -13,9 +13,10 @@ mesh <- create.mesh.2D(nodes = boundary_nodes, segments = boundary_segments)
 mesh <- refine.mesh.2D(mesh, maximum_area = 0.025, minimum_angle = 30)
 FEMbasis <- create.FEM.basis(mesh)
 
-lambda = 10^(c(-0.6, -0.5, -0.4))
+# lambda = 10^(c(-0.6, -0.5, -0.4))
+loglambda=0
 # loglambda=seq(-2, 1, by = 0.1) 
-# lambda <- 10^loglambda
+lambda <- 10^loglambda
 GCVFLAG <- TRUE
 GCVMETHODFLAG <- 'stochastic' 
 # GCVMETHODFLAG <-"exact"
@@ -92,9 +93,10 @@ mixed_obs2 <- cbind(
 )
 
 covariates <- rbind(W, W, W)
+
 # For postprocessing
 # Set number of simulation trials
-N <- 50
+N <- 1
 f_betamat <- matrix(data = NA, nrow = 2, ncol = N)
 # f_betamat = array(data=NA, dim = c (2, length(lambda), N))
 f_bimat <- matrix(data = NA, nrow = 3, ncol = N)
@@ -119,20 +121,18 @@ f_global_rmse3 <- NULL # error on unit3
 
 # Just for efficiency?
 
-    for (i in 1:50){
-        mod2_info <- smooth.FEM.mixed(
-            locations = loc,
-            observations = mixed_obs2, # obs doesn't effect tree, bary, dof
-            covariates = covariates,
-            FEMbasis = FEMbasis,
-            random_effect = c(1),
-            lambda = lambda,
-            lambda.selection.lossfunction = 'GCV',
-            DOF.evaluation = GCVMETHODFLAG,
-            verbose=TRUE,
-            DOF.stochastic.realizations =60,
-            FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = tol, threshold_residual = tol)
-    }
+mod2_info <- smooth.FEM.mixed(
+    locations = loc,
+    observations = mixed_obs2, # obs doesn't effect tree, bary, dof
+    covariates = covariates,
+    FEMbasis = FEMbasis,
+    random_effect = c(1),
+    lambda = lambda,
+    lambda.selection.lossfunction = 'GCV',
+    DOF.evaluation = GCVMETHODFLAG,
+    verbose=TRUE,
+    DOF.stochastic.realizations =60,
+    FLAG_ITERATIVE = TRUE, max.steps = 1000, threshold = tol, threshold_residual = tol)
 mod1_info <- smooth.FEM.mixed(
     locations = loc,
     observations = mixed_obs2, # obs doesn't effect tree, bary, dof
@@ -272,16 +272,18 @@ for (i in names(table(signif(f_selected_lambda, 2)))){
 barplot(m, beside = TRUE, legend = rownames(m), xlab=TeX("$\\log(\\lambda)$"), ylab="counts")
 
 
-png('beta.png')
+#png('beta.png')
+x11()
 par(mfrow = c(1,2))
 half_range=0.15
 boxplot(cbind(f_betamat[1,],kim$f_betamat[1,]), main=TeX("$\\beta_1$"), names=c("I", "M"), ylim=c(beta_exact2[1]-half_range ,beta_exact2[1]+0.10 ), cex.main=1.25, cex.axis=1.25, cex.sub=1.25)
 abline(h=beta_exact2[1], col='gray60')
 boxplot(cbind(f_betamat[2,],kim$f_betamat[2,]), main=TeX("$\\beta_2$"), names=c("I", "M"), ylim=c(beta_exact2[2]-half_range,beta_exact2[2]+0.10), cex.main=1.25, cex.axis=1.25, cex.sub=1.25)
 abline(h=beta_exact2[2], col='gray60')
-dev.off()
+#dev.off()
 
-png('b.png')
+#png('b.png')
+x11()
 par(mfrow = c(1,3))
 boxplot(cbind(kim$f_bimat[1,],f_bimat[1,]), main=TeX("$b_1$"), names=c("I", "M"),ylim=c(-5 -half_range ,-5+half_range ), cex.main=2, cex.axis=2)
 abline(h=-5, col='gray60')
@@ -290,25 +292,28 @@ abline(h=0, col='gray60')
 # boxplot(f_global_rmse1)
 boxplot(cbind(kim$f_bimat[3,],f_bimat[3,]), main=TeX("$b_3$"), names=c("I", "M"),ylim=c(5 -half_range ,5+half_range ),cex.main=2, cex.axis=2)
 abline(h=5, col='gray60')
-dev.off()
+#dev.off()
 
-png('iterations.png')
+#png('iterations.png')
+x11()
 plot(table(iterations), ylab="counts", xlab="number of iterations")
-dev.off()
+#dev.off()
 
-png('res.png')
+#png('res.png')
+x11()
 boxplot(residual, main="Normalized residual", log="y")
-dev.off()
+#dev.off()
 
 DF <- data.frame(f_global_rmse1, kim$f_global_rmse1, 
                  f_global_rmse2, kim$f_global_rmse2, 
                  f_global_rmse3, kim$f_global_rmse3)
-png('rmse.png')
+#png('rmse.png')
+x11()
 boxplot(DF, col = c('gray60','gray90'), at = c(1:2,4:5,7:8), xaxt = "n", main='Global RMSE')
 axis(side = 1, at = c(1.5,4.5,7.5), labels = c("unit1","unit2","unit3"))
 legend("topleft", fill = c('gray60','gray90'), legend = c('Iterative','Monolithic'), horiz = T,
        pt.cex=1.5)
-dev.off()
+#dev.off()
 
 # load("D:/VM/Tesi/my/ite.RData")
 
@@ -318,4 +323,4 @@ detach(horseshoe2D)
 # print("beta iterativo di 3 diverse simulazioni - corrispondente  iterativo vecchio")
 # ite$f_betamat[,1:3]-f_betamat
 # print("beta iterativo di 3 diverse simulazioni - corrispondente  kim")
-kim$f_betamat[,1:3]-f_betamat
+# kim$f_betamat[,1:3]-f_betamat

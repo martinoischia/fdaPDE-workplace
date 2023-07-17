@@ -51,7 +51,7 @@ FCmap_func<-function(datamatrix) {
 # 101107: not usuable (2808 NA whereas all other is 2796
 
 ### fMRI ####
-observations = NULL
+load("D:/connectome/all_patients/connectivityMaps_stopped_at_badguy.RData")
 files = as.character(read.csv("D:/connectome//all_patients//func_files", header = FALSE)[,1])
 setwd("D:/connectome/all_patients/")
 
@@ -63,7 +63,6 @@ for (file in files){
 }
 
 #### cortical thickness ####
-covariates = NULL
 
 files_covariates = as.character(read.csv("D:/connectome//all_patients//thick_files", header = FALSE)[,1])
 for (file in files_covariates){
@@ -73,4 +72,4 @@ for (file in files_covariates){
 	rm(list=ls(pattern="thick"))
 }
 
-save.image("D:/connectome/all_patients/connectivityMaps_stopped_at_badguy.RData")
+save.image("D:/connectome/all_patients/connectivityMaps.RData")
